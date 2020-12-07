@@ -1,0 +1,25 @@
+Robot GPIO pin assignments
+
+Sensors
+
+Left trigger - 25
+Left echo - 12
+
+Right trigger - 5
+Right echo - 6
+
+Front trigger - 4
+Front echo - 17
+
+Left IR sensor - 27
+Right IR sensor - 22
+
+Motors
+
+Left enable - 21
+Left drive (-) - 20
+Left drive (+) - 16
+
+Right enable - 13
+Right drive (-) - 26
+Right drive (+) - 19
