@@ -1,3 +1,6 @@
+STANDARD_SPEED = 50
+
+
 GPIOPins = {
     'ultrasonicRF': {
         'left': {
@@ -17,8 +20,8 @@ GPIOPins = {
     },
     
     'IRSensors': {  
-        'left': 27,
-        'right': 22
+        'left': 22,
+        'right': 27
     },
 
     'motors': {

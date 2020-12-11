@@ -8,7 +8,7 @@ import time
 import RPi.GPIO as GPIO
 import numpy as np
 
-from GPIOPins import GPIOPins
+from configuration import GPIOPins
 
 
 
@@ -100,26 +100,26 @@ class IRProximity:
         
 class SensorsPoll:
     def __init__(self):
-        self.usrf = []
-        self.ir = []
+        self.usrf = {}
+        self.ir = {}
         
         usrfs = GPIOPins['ultrasonicRF']
         for key in usrfs.keys():
             pins = usrfs[key]
             sensor = UltrasonicRF(pins['echo'], pins['trigger'])
-            self.usrf.append(sensor)
+            self.usrf[key] = sensor
             
         irs = GPIOPins['IRSensors']
         for key in irs.keys():
             pin = irs[key]
-            self.ir.append(IRProximity(pin))
+            self.ir[key] = IRProximity(pin)
             
     def ping(self):
-        output = []
-        for sensor in self.usrf:
-            output.append(sensor.getAvgRange(5, .05))
-        for sensor in self.ir:
-            output.append(sensor.ping())
+        output = {}
+        for key in self.usrf.keys():
+            output[key + '_rf'] = self.usrf[key].getAvgRange(5, .05)
+        for key in self.ir.keys():
+            output[key + '_ir'] = self.ir[key].ping()
         return output
                           
 
