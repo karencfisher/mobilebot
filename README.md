@@ -2,7 +2,7 @@
 
 Developing basic code for a two wheel differential drive mobile robot, running on a Raspberry Pi 3 SBC. 
 
-![alt text](https://github.com/karencfishe/mobilebot/blob/main/mobilebot.jpg?raw=true)
+![Screenshot](mobilebot.jpg)
 
 It has at present:
 
