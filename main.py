@@ -6,6 +6,11 @@ from control import RobotControl
 
 
 robot_control = RobotControl()
+log = robot_control.get_log()
+result = eg.enterbox("Enter existing log file")
+if result is not None:
+    log.load(result)
+
 command_queue = queue.Queue()
 control_thread = threading.Thread(target=robot_control.run,
                                   args=(command_queue,))
@@ -21,7 +26,6 @@ while True:
         break
 print('exited')
 
-log = robot_control.get_log()
 log.dump('test.csv')
     
         

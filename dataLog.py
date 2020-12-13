@@ -24,3 +24,10 @@ class DataLog:
             csvwriter = csv.writer(csvfile)  
             csvwriter.writerow(headers)    
             csvwriter.writerows(self.log)
+            
+    def load(self, filepath):
+        with open(filepath, 'r') as csvfile:
+            data = csv.reader(csvfile)
+            for i, line in enumerate(data):
+                if i > 0:
+                    self.log.append(line)
