@@ -1,5 +1,3 @@
-import time
-
 import RPi.GPIO as GPIO
 
 from configuration import *
@@ -99,6 +97,8 @@ class MotorControl:
         motors = GPIOPins['motors']
         for key in motors.keys():
             GPIO.output(list(motors[key].values()), GPIO.LOW)
+        self.left_pwm.ChangeDutyCycle(STANDARD_SPEED)
+        self.right_pwm.ChangeDutyCycle(STANDARD_SPEED)
             
             
             
