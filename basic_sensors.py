@@ -7,6 +7,7 @@ import time
 
 import RPi.GPIO as GPIO
 import numpy as np
+from mpu6050 import mpu6050
 
 from configuration import GPIOPins
 
@@ -95,7 +96,16 @@ class IRProximity:
         '''
         
         return not GPIO.input(self.pin)
+    
+    
+class GyroAccel:
+    def __init__(self):
+        self.accel_gyro = mpu6050(0x68)
         
+    def ping(self):
+        gyro = self.accel_gyro.get_gyro_data()['z']
+        accel = self.accel_gyro.get_accel_data()['y']
+        return gyro, accel
         
         
 class SensorsPoll:
@@ -114,12 +124,17 @@ class SensorsPoll:
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
             
+        self.gyro_accel = GyroAccel()
+            
     def ping(self):
         output = {}
         for key in self.usrf.keys():
             output[key + '_rf'] = self.usrf[key].getAvgRange(5, .05)
         for key in self.ir.keys():
             output[key + '_ir'] = self.ir[key].ping()
+        gyro, accel = self.gyro_accel.ping()
+        output['gyro'] = gyro
+        output['accel'] = accel
         return output
                           
 

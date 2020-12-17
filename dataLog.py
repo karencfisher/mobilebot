@@ -10,6 +10,8 @@ class DataLog:
                          sensor_data['right_rf'],
                          sensor_data['left_ir'],
                          sensor_data['right_ir'],
+                         sensor_data['gyro'],
+                         sensor_data['accel'],
                          action])
         
     def dump(self, filepath):
@@ -18,6 +20,8 @@ class DataLog:
                    'right_rf',
                    'left_ir',
                    'right_ir',
+                   'gyro',
+                   'accel',
                    'action']
         
         with open(filepath, 'w') as csvfile:   

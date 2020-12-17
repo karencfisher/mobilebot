@@ -12,6 +12,7 @@ from dataLog import DataLog
 class RobotControl:
     def __init__(self):    
         GPIO.setmode(GPIO.BCM)
+        GPIO.setup(24, GPIO.OUT)
         self.sp = SensorsPoll()
         self.mc = MotorControl()
         self.data_log = DataLog()
@@ -29,13 +30,16 @@ class RobotControl:
             if command is not None:
                 if command == 'exit':
                     print('exiting...')
+                    GPIO.output(24, GPIO.LOW)
                     self.running = False
                     break
                 elif command == 'stop':
                     print('halted')
+                    GPIO.output(24, GPIO.LOW)
                     self.running = False
                 elif command == 'run':
                     print('running...')
+                    GPIO.output(24, GPIO.HIGH)
                     self.running = True
                 
             if self.running: 
