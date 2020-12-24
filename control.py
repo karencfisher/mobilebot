@@ -1,5 +1,6 @@
 import queue
 import csv
+import time
 
 import RPi.GPIO as GPIO
 
@@ -17,6 +18,7 @@ class RobotControl:
         self.mc = MotorControl()
         self.data_log = DataLog()
         self.running = False
+        self.reverse = False
     
     def run(self, commandQueue):
         while True:
@@ -31,6 +33,7 @@ class RobotControl:
                 if command == 'exit':
                     print('exiting...')
                     GPIO.output(24, GPIO.LOW)
+                    self.mc.stop()
                     self.running = False
                     break
                 elif command == 'stop':
@@ -54,14 +57,31 @@ class RobotControl:
         GPIO.cleanup()
 
     def dispatch(self, sensor_data):
-        if sensor_data['front_rf'] < 20:
-            print('obstacle detected stopping')    
-            self.mc.stop()
-            action = 'stop'
+        if (sensor_data['front_rf'] < 40 or 
+            sensor_data['left_ir'] or
+            sensor_data['right_ir'] and
+            not self.reverse):
+            print('obstacle detected')    
+            self.mc.start('reverse')
+            self.reverse = True
+            action = 'reverse'
+        elif self.reverse:
+            if (sensor_data['front_rf'] > 40 and
+                sensor_data['left_rf'] > 40 and
+                sensor_data['right_rf'] > 40):
+                self.mc.start('hard_left')
+                time.sleep(3)
+                self.mc.stop()
+                self.reverse = False
+                action = 'hard-left'
+                print('hard left')
+            else:
+                action = 'reverse'
+                print('reverse')
         else:
             print('going forward')
             self.mc.start('forward')
-            action = 'forward'       
+            action = 'forward'
         self.data_log.log_data(sensor_data, action)
             
     def get_log(self):
