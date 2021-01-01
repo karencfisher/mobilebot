@@ -18,9 +18,9 @@ control_thread.start()
 print('control thread started')
 
 while True:
-    command = eg.enterbox("command: 'run', 'stop', 'exit'")
+    command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
     command_queue.put(command)
-    if command == 'exit':
+    if command == 'exit' or command == 'x':
         control_thread.join()
         robot_control.shutdown()
         break

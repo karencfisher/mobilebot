@@ -1,6 +1,6 @@
 '''
- Interfaces for basic sensors, ultra sonice rangefinder
- and IR Obstacle sensor
+ Interfaces for basic sensors, ultrasonic rangefinder,
+ IR Obstacle sensor, and IMU (gyro/accel)
 '''
 
 import time
@@ -29,32 +29,40 @@ class UltrasonicRF:
         GPIO.setup(self.trigger, GPIO.OUT)
         GPIO.setup(self.echo, GPIO.IN) 
         
-    def ping(self):
+    def ping(self, timeout=0.01):
         '''
         Get a single reading
         Returns:
             distance in CM
+            
+        exception:
+            if times out, raises TimeoutError
         '''
         
         # trigger ping
         GPIO.output(self.trigger, GPIO.HIGH)
-        time.sleep(.00001)
+        time.sleep(.001)
         GPIO.output(self.trigger, GPIO.LOW)
         
         # wait for echo
+        begin = time.time()
         while GPIO.input(self.echo) == False:
-            start_time = time.time()
+            if time.time() - begin > timeout:
+                raise TimeoutError('timeout')
+        start_time = time.time()
         
         while GPIO.input(self.echo) == True:
-            stop_time = time.time()        
-        
+            if time.time() - begin > timeout:
+                raise TimeoutError('timeout')
+        stop_time = time.time()
+            
         # Calculate distance
         elapsed_time = stop_time - start_time
         d = (elapsed_time * 34300) / 2
         
         return d
     
-    def getAvgRange(self, samples, delay):
+    def getAvgRange(self, samples):
         '''
         Average of set number of pings
         Inputs:
@@ -67,11 +75,18 @@ class UltrasonicRF:
         
         ranges = []
         for i in range(samples):
-            d = self.ping()
-            ranges.append(d)
-            time.sleep(delay)
+            try:
+                d = self.ping()
+            except TimeoutError:
+                continue
+            else:
+                ranges.append(d)
     
-        distance = np.mean(ranges)
+        if len(ranges) > 0:
+            distance = np.mean(ranges)
+        else:
+            distance = np.NAN
+            
         return distance
     
     
@@ -103,12 +118,15 @@ class GyroAccel:
         self.accel_gyro = mpu6050(0x68)
         
     def ping(self):
-        gyro = self.accel_gyro.get_gyro_data()['z']
-        accel = self.accel_gyro.get_accel_data()['y']
+        gyro = self.accel_gyro.get_gyro_data()
+        accel = self.accel_gyro.get_accel_data()
         return gyro, accel
         
         
 class SensorsPoll:
+    '''
+    Collects data from all the basic sensors
+    '''
     def __init__(self):
         self.usrf = {}
         self.ir = {}
@@ -123,18 +141,18 @@ class SensorsPoll:
         for key in irs.keys():
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
-            
         self.gyro_accel = GyroAccel()
             
     def ping(self):
         output = {}
         for key in self.usrf.keys():
-            output[key + '_rf'] = self.usrf[key].getAvgRange(5, .05)
+            output[key + '_rf'] = self.usrf[key].getAvgRange(10)
         for key in self.ir.keys():
             output[key + '_ir'] = self.ir[key].ping()
         gyro, accel = self.gyro_accel.ping()
-        output['gyro'] = gyro
-        output['accel'] = accel
+        for key in ['x', 'y', 'z']:
+            output['gyro_' + key] = gyro[key]
+            output['accel_' + key] = accel[key]
         return output
                           
 
@@ -144,15 +162,19 @@ if __name__ == "__main__":
     
     GPIO.setmode(GPIO.BCM)
     sp = SensorsPoll()
+    count = 0
+    start = time.time()
     
     try:
         while True:
             print(sp.ping())
-            time.sleep(.25)
+#            time.sleep(.1)
+            count += 1
     
     except KeyboardInterrupt:
         pass
     
     finally:
+        print(round(count // (time.time() - start), 2), 'samples per second')
         GPIO.cleanup()
                           

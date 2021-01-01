@@ -1,4 +1,5 @@
 STANDARD_SPEED = 70
+MINIMUM_DISTANCE = 10
 
 
 GPIOPins = {
@@ -36,5 +37,7 @@ GPIOPins = {
             'drive_n': 26,
             'drive_p': 19
         }
-    }
+    },
+    
+    'run_led': 24,
 }

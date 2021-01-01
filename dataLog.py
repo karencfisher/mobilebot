@@ -4,24 +4,34 @@ class DataLog:
     def __init__(self):
         self.log = []
     
-    def log_data(self, sensor_data, action):
-        self.log.append([sensor_data['left_rf'],
+    def log_data(self, time_stamp, sensor_data, action):
+        self.log.append([time_stamp,
+                         sensor_data['left_rf'],
                          sensor_data['front_rf'],
                          sensor_data['right_rf'],
                          sensor_data['left_ir'],
                          sensor_data['right_ir'],
-                         sensor_data['gyro'],
-                         sensor_data['accel'],
+                         sensor_data['gyro_x'],
+                         sensor_data['gyro_y'],
+                         sensor_data['gyro_z'],
+                         sensor_data['accel_x'],
+                         sensor_data['accel_y'],
+                         sensor_data['accel_z'],
                          action])
         
     def dump(self, filepath):
-        headers = ['left_rf',
-                   'front_lf',
+        headers = ['time_stamp',
+                   'left_rf',
+                   'front_rf',
                    'right_rf',
                    'left_ir',
                    'right_ir',
-                   'gyro',
-                   'accel',
+                   'gyro_x',
+                   'gyro_y',
+                   'gyro_z',
+                   'accel_x',
+                   'accel_y',
+                   'accel_z',
                    'action']
         
         with open(filepath, 'w') as csvfile:   
