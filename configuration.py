@@ -1,5 +1,5 @@
-STANDARD_SPEED = 70
-MINIMUM_DISTANCE = 10
+STANDARD_SPEED = 50
+MINIMUM_DISTANCE = 30
 
 
 GPIOPins = {
@@ -28,14 +28,14 @@ GPIOPins = {
     'motors': {
         'left': {
             'enable': 21,
-            'drive_n': 20,
-            'drive_p': 16
+            'drive_n': 16,
+            'drive_p': 20
         },
         
         'right': {
             'enable': 13,
-            'drive_n': 26,
-            'drive_p': 19
+            'drive_n': 19,
+            'drive_p': 26
         }
     },
     

@@ -18,8 +18,8 @@ class RobotControl:
         self.mc = MotorControl()
         self.data_log = DataLog()
         self.running = False
-        self.reverse = False
         self.start_time = None
+        self.state = 'stopped'
     
     def run(self, commandQueue):
         while True:
@@ -38,6 +38,7 @@ class RobotControl:
                     print('halted')
                     GPIO.output(GPIOPins['run_led'], GPIO.LOW)
                     self.running = False
+                    self.state = 'stopped'
                 elif command == 'run' or command == 'r':
                     self.start_time = time.time()
                     print('running...')
@@ -59,15 +60,48 @@ class RobotControl:
         GPIO.cleanup()
         
 
-    def dispatch(self, elapsed, sensor_data):                  
-        if sensor_data['front_rf'] < MINIMUM_DISTANCE:
-            print('stopped')
-            self.mc.stop()
-            action = 'stopped'
-        else:
-            print('going forward')
+    def dispatch(self, elapsed, sensor_data):
+        if self.state == 'stopped':
+            if (sensor_data['front_rf'] > MINIMUM_DISTANCE or
+                    not sensor_data['right_ir'] or not
+                    sensor_data['left_ir']):
+                print('going forward')
+                self.mc.start('forward')
+                action = 'forward'
+                self.state = 'forward'
+            else:
+                action = 'stopped'
+            
+        elif self.state == 'forward':
+            if (sensor_data['front_rf'] <= MINIMUM_DISTANCE or
+                    sensor_data['right_ir'] or sensor_data['left_ir']):
+                self.mc.stop()
+                print('reverse')
+                self.mc.start('reverse')
+                action = 'reverse'
+                self.state= 'reverse'
+            else:
+                action = 'forward'
+                
+        elif self.state == 'reverse':
+            if sensor_data['front_rf'] > MINIMUM_DISTANCE:
+                print('spin left')
+                self.mc.start('spin_left')
+                action = 'spin_left'
+                self.state = 'spin_left'
+            else:
+                action = 'reverse'
+                
+        elif self.state =='spin_left':
+            time.sleep(.2)
+            print('forward')
             self.mc.start('forward')
             action = 'forward'
+            self.state = 'forward'
+            
+        else:
+            action = self.state
+                
 
         self.data_log.log_data(elapsed, sensor_data, action)
         

@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import time
 
 from configuration import *
 
@@ -35,59 +36,59 @@ class MotorControl:
     def start(self, direction, duration=-1):
         if direction == 'forward':
             GPIO.output([self.left_forward, self.right_forward],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_reverse],
+                        GPIO.LOW)
             
         elif direction == 'reverse':
             GPIO.output([self.left_reverse, self.right_reverse],
-                        GPIO.LOW)
-            GPIO.output([self.left_forward, self.right_forward],
                         GPIO.HIGH)
+            GPIO.output([self.left_forward, self.right_forward],
+                        GPIO.LOW)
             
         elif direction == 'spin_left':
             GPIO.output([self.right_forward, self.left_reverse],
-                        GPIO.LOW)
-            GPIO.output([self.left_forward, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_forward, self.right_reverse],
+                        GPIO.LOW)
         
         elif direction == 'spin_right':
             GPIO.output([self.left_forward, self.right_reverse],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_forward],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_forward],
+                        GPIO.LOW)
             
         elif direction == 'soft_left':
             speed = STANDARD_SPEED + STANDARD_SPEED * .2
             self.right_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_reverse],
+                        GPIO.LOW)
             
         elif direction == 'soft_right':
             speed = STANDARD_SPEED + STANDARD_SPEED * .2
             self.left_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_reverse],
+                        GPIO.LOW)
             
         elif direction == 'hard_left':
             speed = STANDARD_SPEED + STANDARD_SPEED * .40
             self.right_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_reverse],
+                        GPIO.LOW)
             
         elif direction == 'hard_right':
             speed = STANDARD_SPEED + STANDARD_SPEED * .40
             self.left_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
-                        GPIO.LOW)
-            GPIO.output([self.left_reverse, self.right_reverse],
                         GPIO.HIGH)
+            GPIO.output([self.left_reverse, self.right_reverse],
+                        GPIO.LOW)
             
         if duration > -1:
             time.sleep(duration)
