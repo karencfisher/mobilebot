@@ -13,7 +13,7 @@ from dataLog import DataLog
 class RobotControl:
     def __init__(self):    
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(GPIOPins['run_led'], GPIO.OUT)
+        GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
         self.sp = SensorsPoll()
         self.mc = MotorControl()
         self.data_log = DataLog()
@@ -36,13 +36,13 @@ class RobotControl:
                     break
                 elif command == 'stop' or command == 's':
                     print('halted')
-                    GPIO.output(GPIOPins['run_led'], GPIO.LOW)
+                    GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                     self.running = False
                     self.state = 'stopped'
                 elif command == 'run' or command == 'r':
                     self.start_time = time.time()
                     print('running...')
-                    GPIO.output(GPIOPins['run_led'], GPIO.HIGH)
+                    GPIO.output(GPIOPins['indicators']['run_led'], GPIO.HIGH)
                     self.running = True
                 
             if self.running: 

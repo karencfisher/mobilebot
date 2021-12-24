@@ -59,7 +59,7 @@ class MotorControl:
                         GPIO.LOW)
             
         elif direction == 'soft_left':
-            speed = STANDARD_SPEED + STANDARD_SPEED * .2
+            speed = STANDARD_SPEED * 1.2
             self.right_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
                         GPIO.HIGH)
@@ -67,7 +67,7 @@ class MotorControl:
                         GPIO.LOW)
             
         elif direction == 'soft_right':
-            speed = STANDARD_SPEED + STANDARD_SPEED * .2
+            speed = STANDARD_SPEED * 1.2
             self.left_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
                         GPIO.HIGH)
@@ -75,7 +75,7 @@ class MotorControl:
                         GPIO.LOW)
             
         elif direction == 'hard_left':
-            speed = STANDARD_SPEED + STANDARD_SPEED * .40
+            speed = STANDARD_SPEED * 1.40
             self.right_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
                         GPIO.HIGH)
@@ -83,7 +83,7 @@ class MotorControl:
                         GPIO.LOW)
             
         elif direction == 'hard_right':
-            speed = STANDARD_SPEED + STANDARD_SPEED * .40
+            speed = STANDARD_SPEED * 1.40
             self.left_pwm.ChangeDutyCycle(speed)
             GPIO.output([self.left_forward, self.right_forward],
                         GPIO.HIGH)
