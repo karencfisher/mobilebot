@@ -46,7 +46,7 @@ class MotorControl:
 
             # Look up the settings
             settings = MotorSettings[command]
-            print(f'motor process: {command}')
+            print('motor process:', command)
 
             # Implement changes
             self.left_pwm.ChangeDutyCycle(STANDARD_SPEED + settings['left_accel'])
