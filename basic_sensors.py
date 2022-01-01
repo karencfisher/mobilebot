@@ -125,17 +125,24 @@ class GyroAccel:
         
 class SensorsPoll:
     '''
-    Collects data from all the basic sensors
+    Collects data from all the basic sensors and posts for other
+    processes to consume
+
+    flag: shared memory, boolean, consumes flag. True to run, False to exit.
+    data: shared dictionary, posting current sensor data
     '''
-    def __init__(self):
+    def __init__(self, flag, data):
         self.usrf = {}
         self.ir = {}
+        self.data = data
+        self.flag = flag
         
         usrfs = GPIOPins['ultrasonicRF']
         for key in usrfs.keys():
             pins = usrfs[key]
             sensor = UltrasonicRF(pins['echo'], pins['trigger'])
             self.usrf[key] = sensor
+        self.samples = usrfs['samples']
             
         irs = GPIOPins['IRSensors']
         for key in irs.keys():
@@ -143,38 +150,16 @@ class SensorsPoll:
             self.ir[key] = IRProximity(pin)
         self.gyro_accel = GyroAccel()
             
-    def ping(self):
-        output = {}
-        for key in self.usrf.keys():
-            output[key + '_rf'] = self.usrf[key].getAvgRange(10)
-        for key in self.ir.keys():
-            output[key + '_ir'] = self.ir[key].ping()
-        gyro, accel = self.gyro_accel.ping()
-        for key in ['x', 'y', 'z']:
-            output['gyro_' + key] = gyro[key]
-            output['accel_' + key] = accel[key]
-        return output
+    def run(self):
+        while self.flag.value:
+            for key in self.usrf.keys():
+                self.data[key + '_rf'] = self.usrf[key].getAvgRange(self.samples)
+            for key in self.ir.keys():
+                self.data[key + '_ir'] = self.ir[key].ping()
+            gyro, accel = self.gyro_accel.ping()
+            for key in ['x', 'y', 'z']:
+                self.data['gyro_' + key] = gyro[key]
+                self.data['accel_' + key] = accel[key]
                           
 
-
-# Test Code
-if __name__ == "__main__":
-    
-    GPIO.setmode(GPIO.BCM)
-    sp = SensorsPoll()
-    count = 0
-    start = time.time()
-    
-    try:
-        while True:
-            print(sp.ping())
-#            time.sleep(.1)
-            count += 1
-    
-    except KeyboardInterrupt:
-        pass
-    
-    finally:
-        print(round(count // (time.time() - start), 2), 'samples per second')
-        GPIO.cleanup()
-                          
+                         
