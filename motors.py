@@ -34,7 +34,9 @@ class MotorControl:
         print('start motors process')
         while self.flag.value:
             # Wait for a change
-            command = self.commandQueue.get(block=True)
+            if self.commandQueue.empty():
+                continue
+            command = self.commandQueue.get(block=False)
 
             # Look up the settings
             settings = MotorSettings[command]
@@ -53,4 +55,4 @@ class MotorControl:
         GPIO.output(self.left_reverse, 0)
         GPIO.output(self.right_forward, 0)
         GPIO.output(self.right_reverse, 0)
-    
+        print('end motor process')

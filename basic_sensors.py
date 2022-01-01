@@ -168,6 +168,7 @@ class SensorsPoll:
             #     output['gyro_' + key] = gyro[key]
             #     output['accel_' + key] = accel[key]
             self.data.put(output)
+        print("end sensor process")
                           
 
                          
