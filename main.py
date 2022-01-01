@@ -1,8 +1,9 @@
-import queue, threading
+from multiprocessing import Process, Queue
 
 import easygui as eg
 
 from control import RobotControl
+
 
 
 def main():
@@ -32,6 +33,7 @@ if __name__ == '__main__':
     main()
 
 # log.dump('test.csv')
+
     
         
 

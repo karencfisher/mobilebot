@@ -15,9 +15,8 @@ except (RuntimeError, ModuleNotFoundError):
 import numpy as np
 #from mpu6050 import mpu6050
 
-from configuration import GPIOPins, SAMPLES
-
-
+from configuration import GPIOPins
+from Kalman import KalmanAngle
 
 class UltrasonicRF:
     def __init__(self, echo, trigger):
@@ -153,8 +152,9 @@ class SensorsPoll:
         for key in irs.keys():
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
-        #self.gyro_accel = GyroAccel()
-            
+
+        
+           
     def run(self):
         print("start sensor process")
         while self.flag.value:
@@ -171,4 +171,4 @@ class SensorsPoll:
         print("end sensor process")
                           
 
-                         
+
