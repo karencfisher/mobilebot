@@ -1,6 +1,7 @@
 STANDARD_SPEED = 50
 INCREMENT = 0.2
 MINIMUM_DISTANCE = 30
+SAMPLES = 10
 
 
 GPIOPins = {
@@ -20,7 +21,7 @@ GPIOPins = {
 }
 
 MotorSettings = {
-    'stopped': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
+    'stop': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
     'forward': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
@@ -32,9 +33,9 @@ MotorSettings = {
     'decelerate': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                    'left_accel': -INCREMENT, 'right_accel': -INCREMENT},
     
-    'spin_left': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
+    'spin_left': {'l_fwd': 0, 'l_rev': 1, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
-    'spin_right': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
+    'spin_right': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 1, 'left_accel': 0, 'right_accel': 0},
     
     'left': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                   'left_accel': 0, 'right_accel': INCREMENT},
