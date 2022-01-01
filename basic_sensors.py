@@ -15,9 +15,8 @@ import numpy as np
 
 #from mpu6050 import mpu6050
 
-from configuration import GPIOPins
-
-
+from configuration import GPIOPins, SAMPLES
+from Kalman import KalmanAngle
 
 class UltrasonicRF:
     def __init__(self, echo, trigger):
@@ -131,11 +130,17 @@ class GyroAccel:
         
 class SensorsPoll:
     '''
-    Collects data from all the basic sensors
+    Collects data from all the basic sensors and posts for other
+    processes to consume
+
+    flag: shared memory, boolean, consumes flag. True to run, False to exit.
+    data: queue to send sensor data
     '''
-    def __init__(self):
+    def __init__(self, flag, data):
         self.usrf = {}
         self.ir = {}
+        self.data = data
+        self.flag = flag
         
         usrfs = GPIOPins['ultrasonicRF']
         for key in usrfs.keys():
@@ -147,40 +152,21 @@ class SensorsPoll:
         for key in irs.keys():
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
-        #self.gyro_accel = GyroAccel()
-            
-    def ping(self):
-        output = {}
-        for key in self.usrf.keys():
-            output[key + '_rf'] = self.usrf[key].getAvgRange(10)
-        for key in self.ir.keys():
-            output[key + '_ir'] = self.ir[key].ping()
-        # gyro, accel = self.gyro_accel.ping()
-        # for key in ['x', 'y', 'z']:
-        #     output['gyro_' + key] = gyro[key]
-        #     output['accel_' + key] = accel[key]
-        return output
+     
+    def run(self):
+        print("start sensor process")
+        while self.flag.value:
+            output = {}
+            for key in self.usrf.keys():
+                output[key + '_rf'] = self.usrf[key].getAvgRange(SAMPLES)
+            for key in self.ir.keys():
+                output[key + '_ir'] = self.ir[key].ping()
+            # gyro, accel = self.gyro_accel.ping()
+            # for key in ['x', 'y', 'z']:
+            #     output['gyro_' + key] = gyro[key]
+            #     output['accel_' + key] = accel[key]
+            self.data.put(output)
+        print("end sensor process")
                           
 
 
-# Test Code
-if __name__ == "__main__":
-    
-    GPIO.setmode(GPIO.BCM)
-    sp = SensorsPoll()
-    count = 0
-    start = time.time()
-    
-    try:
-        while True:
-            print(sp.ping())
-#            time.sleep(.1)
-            count += 1
-    
-    except KeyboardInterrupt:
-        pass
-    
-    finally:
-        print(round(count // (time.time() - start), 2), 'samples per second')
-        GPIO.cleanup()
-                          

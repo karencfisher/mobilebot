@@ -1,4 +1,4 @@
-import queue
+from multiprocessing import Process, Value, Queue
 import csv
 import time
 
@@ -19,25 +19,36 @@ class RobotControl:
     def __init__(self):    
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
-        self.sp = SensorsPoll()
-        self.mc = MotorControl()
+
+        self.flag = Value('i', 1)
+        self.sensorData = Queue()
+        sp = SensorsPoll(self.flag, self.sensorData)
+        sensor_process = Process(target=sp.run)
+        self.processes = [sensor_process]
+
+        self.motorQueue = Queue()
+        mc = MotorControl(self.flag, self.motorQueue)
+        motor_process = Process(target=mc.run)
+        self.processes.append(motor_process)
+
         self.data_log = DataLog()
         self.running = False
         self.start_time = None
         self.state = 'stopped'
     
     def run(self, commandQueue):
+        for process in self.processes:
+            process.start()
         while True:
-            try:
+            if not commandQueue.empty():
                 command = commandQueue.get(False)
-            except queue.Empty:
-                command = None
-                
-            if command is not None:
                 if command == 'exit' or command == 'x':
                     print('exiting...')
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                     self.running = False
+                    self.flag.value = 0
+                    for process in self.processes:
+                        process.join()
                     break
                 elif command == 'stop' or command == 's':
                     print('halted')
@@ -50,18 +61,18 @@ class RobotControl:
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.HIGH)
                     self.running = True
                 
-            if self.running: 
-                sensor_data = self.sp.ping()
-                print(sensor_data)
-                elapsed = time.time() - self.start_time
-                self.dispatch(elapsed, sensor_data)
-            else:
-                self.mc.stop()
+
+            if self.running:
+                if not self.sensorData.empty():
+                    sensorData = self.sensorData.get_nowait()
+                    print(sensorData)
+                    elapsed = time.time() - self.start_time
+                    self.dispatch(elapsed, sensorData)
+            
         print('exiting thread...')
-        
+       
 
     def shutdown(self):
-        self.mc.shutdown()
         GPIO.cleanup()
         
 
@@ -71,7 +82,7 @@ class RobotControl:
                     not sensor_data['right_ir'] or not
                     sensor_data['left_ir']):
                 print('going forward')
-                self.mc.start('forward')
+                self.motorQueue.put('forward')
                 action = 'forward'
                 self.state = 'forward'
             else:
@@ -80,9 +91,8 @@ class RobotControl:
         elif self.state == 'forward':
             if (sensor_data['front_rf'] <= MINIMUM_DISTANCE or
                     sensor_data['right_ir'] or sensor_data['left_ir']):
-                self.mc.stop()
                 print('reverse')
-                self.mc.start('reverse')
+                self.motorQueue.put('reverse')
                 action = 'reverse'
                 self.state= 'reverse'
             else:
@@ -91,7 +101,7 @@ class RobotControl:
         elif self.state == 'reverse':
             if sensor_data['front_rf'] > MINIMUM_DISTANCE:
                 print('spin left')
-                self.mc.start('spin_left')
+                self.motorQueue.put('spin_left')
                 action = 'spin_left'
                 self.state = 'spin_left'
             else:
@@ -100,7 +110,7 @@ class RobotControl:
         elif self.state =='spin_left':
             time.sleep(.2)
             print('forward')
-            self.mc.start('forward')
+            self.motorQueue.put('forward')
             action = 'forward'
             self.state = 'forward'
             
@@ -117,4 +127,12 @@ class RobotControl:
     
                    
     
-    
+if __name__ == '__main__':
+    import queue
+
+    cmdQueue = queue.Queue()
+    robot = RobotControl()
+    cmdQueue.put('r')
+    robot.run(cmdQueue)
+
+        
