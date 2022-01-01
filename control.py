@@ -1,8 +1,13 @@
-from multiprocessing import Process, Value, Manager, Queue
+from multiprocessing import Process, Value, Queue
 import csv
 import time
 
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as GPIO
 
 from configuration import *
 from basic_sensors import SensorsPoll
@@ -16,18 +21,15 @@ class RobotControl:
         GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
 
         self.flag = Value('i', 1)
-        self.sensorData = Manager().dict()
+        self.sensorData = Queue()
         sp = SensorsPoll(self.flag, self.sensorData)
         sensor_process = Process(target=sp.run)
         self.processes = [sensor_process]
 
         self.motorQueue = Queue()
-        mc = MotorControl(self.motorQueue)
+        mc = MotorControl(self.flag, self.motorQueue)
         motor_process = Process(target=mc.run)
         self.processes.append(motor_process)
-
-        for process in self.processes:
-            process.start()
 
         self.data_log = DataLog()
         self.running = False
@@ -35,7 +37,8 @@ class RobotControl:
         self.state = 'stopped'
     
     def run(self, commandQueue):
-
+        for process in self.processes:
+            process.start()
         while True:
             if commandQueue.full():
                 command = commandQueue.get(False)
@@ -58,10 +61,12 @@ class RobotControl:
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.HIGH)
                     self.running = True
                 
-            if self.running: 
-                print(self.sensorData)
-                elapsed = time.time() - self.start_time
-                self.dispatch(elapsed, self.sensorData)
+            if self.running:
+                if self.sensorData.full():
+                    sensorData = self.sensorData.get_nowait()
+                    print(self.sensorData)
+                    elapsed = time.time() - self.start_time
+                    self.dispatch(elapsed, self.sensorData)
             else:
                 self.motorQueue.put('stop')
         print('exiting thread...')

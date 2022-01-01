@@ -1,14 +1,14 @@
 STANDARD_SPEED = 50
 INCREMENT = 0.2
 MINIMUM_DISTANCE = 30
+SAMPLES = 10
 
 
 GPIOPins = {
     'ultrasonicRF': {
         'left': {'trigger': 25, 'echo' : 12},
         'right': {'trigger': 5, 'echo': 6},
-        'front': {'trigger': 4, 'echo': 17},
-        'samples': 10
+        'front': {'trigger': 4, 'echo': 17}
     },
     
     'IRSensors': {'left': 22, 'right': 27},

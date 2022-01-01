@@ -5,11 +5,17 @@
 
 import time
 
-import RPi.GPIO as GPIO
-import numpy as np
-from mpu6050 import mpu6050
+try:
+    import RPi.GPIO as GPIO
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as GPIO
 
-from configuration import GPIOPins
+import numpy as np
+#from mpu6050 import mpu6050
+
+from configuration import GPIOPins, SAMPLES
 
 
 
@@ -129,7 +135,7 @@ class SensorsPoll:
     processes to consume
 
     flag: shared memory, boolean, consumes flag. True to run, False to exit.
-    data: shared dictionary, posting current sensor data
+    data: queue to send sensor data
     '''
     def __init__(self, flag, data):
         self.usrf = {}
@@ -142,24 +148,25 @@ class SensorsPoll:
             pins = usrfs[key]
             sensor = UltrasonicRF(pins['echo'], pins['trigger'])
             self.usrf[key] = sensor
-        self.samples = usrfs['samples']
             
         irs = GPIOPins['IRSensors']
         for key in irs.keys():
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
-        self.gyro_accel = GyroAccel()
+        #self.gyro_accel = GyroAccel()
             
     def run(self):
         while self.flag.value:
+            output = {}
             for key in self.usrf.keys():
-                self.data[key + '_rf'] = self.usrf[key].getAvgRange(self.samples)
+                output[key + '_rf'] = self.usrf[key].getAvgRange(SAMPLES)
             for key in self.ir.keys():
-                self.data[key + '_ir'] = self.ir[key].ping()
-            gyro, accel = self.gyro_accel.ping()
-            for key in ['x', 'y', 'z']:
-                self.data['gyro_' + key] = gyro[key]
-                self.data['accel_' + key] = accel[key]
+                output[key + '_ir'] = self.ir[key].ping()
+            # gyro, accel = self.gyro_accel.ping()
+            # for key in ['x', 'y', 'z']:
+            #     output['gyro_' + key] = gyro[key]
+            #     output['accel_' + key] = accel[key]
+            self.data.put(output)
                           
 
                          
