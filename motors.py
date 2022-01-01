@@ -31,12 +31,14 @@ class MotorControl:
                 self.right_reverse = motors[key]['drive_n']
                 
     def run(self):
+        print('start motors process')
         while self.flag.value:
             # Wait for a change
             command = self.commandQueue.get(block=True)
 
             # Look up the settings
-            settings = MotorSettings['command']
+            settings = MotorSettings[command]
+            print(f'motor process: {command}')
 
             # Implement changes
             self.left_pwm.ChangeDutyCycle(STANDARD_SPEED + settings['left_accel'])

@@ -40,7 +40,7 @@ class RobotControl:
         for process in self.processes:
             process.start()
         while True:
-            if commandQueue.full():
+            if not commandQueue.empty():
                 command = commandQueue.get(False)
                 if command == 'exit' or command == 'x':
                     print('exiting...')
@@ -62,18 +62,16 @@ class RobotControl:
                     self.running = True
                 
             if self.running:
-                if self.sensorData.full():
+                if not self.sensorData.empty():
                     sensorData = self.sensorData.get_nowait()
-                    print(self.sensorData)
+                    print(sensorData)
                     elapsed = time.time() - self.start_time
-                    self.dispatch(elapsed, self.sensorData)
-            else:
-                self.motorQueue.put('stop')
+                    self.dispatch(elapsed, sensorData)
+            
         print('exiting thread...')
         
 
     def shutdown(self):
-        self.mc.shutdown()
         GPIO.cleanup()
         
 
@@ -92,7 +90,6 @@ class RobotControl:
         elif self.state == 'forward':
             if (sensor_data['front_rf'] <= MINIMUM_DISTANCE or
                     sensor_data['right_ir'] or sensor_data['left_ir']):
-                self.mc.stop()
                 print('reverse')
                 self.motorQueue.put('reverse')
                 action = 'reverse'
@@ -120,7 +117,7 @@ class RobotControl:
             action = self.state
                 
 
-        self.data_log.log_data(elapsed, sensor_data, action)
+        # self.data_log.log_data(elapsed, sensor_data, action)
         
             
     def get_log(self):
@@ -129,4 +126,12 @@ class RobotControl:
     
                    
     
-    
+if __name__ == '__main__':
+    import queue
+
+    cmdQueue = queue.Queue()
+    robot = RobotControl()
+    cmdQueue.put('r')
+    robot.run(cmdQueue)
+
+        

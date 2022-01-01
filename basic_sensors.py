@@ -156,6 +156,7 @@ class SensorsPoll:
         #self.gyro_accel = GyroAccel()
             
     def run(self):
+        print("start sensor process")
         while self.flag.value:
             output = {}
             for key in self.usrf.keys():
