@@ -10,6 +10,7 @@ import numpy as np
 from mpu6050 import mpu6050
 
 from configuration import GPIOPins
+from Kalman import KalmanAngle
 
 
 
@@ -142,6 +143,7 @@ class SensorsPoll:
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
         self.gyro_accel = GyroAccel()
+        
             
     def ping(self):
         output = {}
@@ -165,10 +167,13 @@ if __name__ == "__main__":
     count = 0
     start = time.time()
     
+    kalman = KalmanAngle()
+    
     try:
         while True:
-            print(sp.ping())
-#            time.sleep(.1)
+            data = sp.gyro_accel.ping()
+            print(kalman.getAngle(data[1]['x'], data[0]['x'], 0.02), data[1]['x'])
+            time.sleep(.1)
             count += 1
     
     except KeyboardInterrupt:

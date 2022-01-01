@@ -31,7 +31,7 @@ class RobotControl:
             if command is not None:
                 if command == 'exit' or command == 'x':
                     print('exiting...')
-                    GPIO.output(GPIOPins['run_led'], GPIO.LOW)
+                    GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                     self.running = False
                     break
                 elif command == 'stop' or command == 's':
@@ -52,7 +52,7 @@ class RobotControl:
                 self.dispatch(elapsed, sensor_data)
             else:
                 self.mc.stop()
-        print('exiting thread...')
+        print('exiting process...')
         
 
     def shutdown(self):

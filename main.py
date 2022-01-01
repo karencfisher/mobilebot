@@ -1,4 +1,4 @@
-import queue, threading
+from multiprocessing import Process, Queue
 
 import easygui as eg
 
@@ -11,17 +11,17 @@ result = eg.enterbox("Enter existing log file")
 if result is not None:
     log.load(result)
 
-command_queue = queue.Queue()
-control_thread = threading.Thread(target=robot_control.run,
+command_queue = Queue()
+control_process = Process(target=robot_control.run,
                                   args=(command_queue,))
-control_thread.start()
-print('control thread started')
+control_process.start()
+print('control process started')
 
 while True:
     command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
     command_queue.put(command)
     if command == 'exit' or command == 'x':
-        control_thread.join()
+        control_process.join()
         robot_control.shutdown()
         break
 print('exited')
