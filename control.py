@@ -2,7 +2,12 @@ import queue
 import csv
 import time
 
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as GPIO
 
 from configuration import *
 from basic_sensors import SensorsPoll
@@ -31,7 +36,7 @@ class RobotControl:
             if command is not None:
                 if command == 'exit' or command == 'x':
                     print('exiting...')
-                    GPIO.output(GPIOPins['run_led'], GPIO.LOW)
+                    GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                     self.running = False
                     break
                 elif command == 'stop' or command == 's':
@@ -103,7 +108,7 @@ class RobotControl:
             action = self.state
                 
 
-        self.data_log.log_data(elapsed, sensor_data, action)
+        #self.data_log.log_data(elapsed, sensor_data, action)
         
             
     def get_log(self):

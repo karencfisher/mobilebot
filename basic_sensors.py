@@ -5,9 +5,15 @@
 
 import time
 
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as GPIO
 import numpy as np
-from mpu6050 import mpu6050
+
+#from mpu6050 import mpu6050
 
 from configuration import GPIOPins
 
@@ -141,7 +147,7 @@ class SensorsPoll:
         for key in irs.keys():
             pin = irs[key]
             self.ir[key] = IRProximity(pin)
-        self.gyro_accel = GyroAccel()
+        #self.gyro_accel = GyroAccel()
             
     def ping(self):
         output = {}
@@ -149,10 +155,10 @@ class SensorsPoll:
             output[key + '_rf'] = self.usrf[key].getAvgRange(10)
         for key in self.ir.keys():
             output[key + '_ir'] = self.ir[key].ping()
-        gyro, accel = self.gyro_accel.ping()
-        for key in ['x', 'y', 'z']:
-            output['gyro_' + key] = gyro[key]
-            output['accel_' + key] = accel[key]
+        # gyro, accel = self.gyro_accel.ping()
+        # for key in ['x', 'y', 'z']:
+        #     output['gyro_' + key] = gyro[key]
+        #     output['accel_' + key] = accel[key]
         return output
                           
 
