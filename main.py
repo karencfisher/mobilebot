@@ -25,7 +25,6 @@ def main():
         command_queue.put(command)
         if command == 'exit' or command == 'x':
             control_thread.join()
-            robot_control.shutdown()
             break
     print('exited')
 

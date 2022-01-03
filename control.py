@@ -46,9 +46,7 @@ class RobotControl:
                     print('exiting...')
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                     self.running = False
-                    self.flag.value = 0
-                    for process in self.processes:
-                        process.join()
+                    self.shutdown()
                     break
                 elif command == 'stop' or command == 's':
                     print('halted')
@@ -60,65 +58,43 @@ class RobotControl:
                     print('running...')
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.HIGH)
                     self.running = True
-                
 
             if self.running:
-                if not self.sensorData.empty():
-                    sensorData = self.sensorData.get_nowait()
-                    print(sensorData)
-                    elapsed = time.time() - self.start_time
-                    self.dispatch(elapsed, sensorData)
+                try:
+                    if not self.sensorData.empty():
+                        sensorData = self.sensorData.get_nowait()
+                        print(sensorData)
+                        elapsed = time.time() - self.start_time
+                        self.dispatch(elapsed, sensorData)  
+                except:
+                    self.shutdown()
             
         print('exiting thread...')
        
 
     def shutdown(self):
+        self.flag.value = 0
+        for process in self.processes:
+            process.join()
         GPIO.cleanup()
         
 
     def dispatch(self, elapsed, sensor_data):
-        if self.state == 'stopped':
-            if (sensor_data['front_rf'] > MINIMUM_DISTANCE or
-                    not sensor_data['right_ir'] or not
-                    sensor_data['left_ir']):
-                print('going forward')
-                self.motorQueue.put('forward')
-                action = 'forward'
-                self.state = 'forward'
-            else:
-                action = 'stopped'
+        if (sensor_data['front_rf'] < MINIMUM_DISTANCE or
+          sensor_data['right_ir'] or sensor_data['left_ir']):
+            self.state = 'spin_left'
             
-        elif self.state == 'forward':
-            if (sensor_data['front_rf'] <= MINIMUM_DISTANCE or
-                    sensor_data['right_ir'] or sensor_data['left_ir']):
-                print('reverse')
-                self.motorQueue.put('reverse')
-                action = 'reverse'
-                self.state= 'reverse'
-            else:
-                action = 'forward'
-                
-        elif self.state == 'reverse':
-            if sensor_data['front_rf'] > MINIMUM_DISTANCE:
-                print('spin left')
-                self.motorQueue.put('spin_left')
-                action = 'spin_left'
-                self.state = 'spin_left'
-            else:
-                action = 'reverse'
-                
-        elif self.state =='spin_left':
-            time.sleep(.2)
-            print('forward')
-            self.motorQueue.put('forward')
-            action = 'forward'
-            self.state = 'forward'
+        elif (sensor_data['left_rf'] < MINIMUM_DISTANCE):
+            self.state = 'right'
+            
+        elif (sensor_data['right_rf'] < MINIMUM_DISTANCE):
+            self.state = 'left'
             
         else:
-            action = self.state
+            self.state = 'forward'
                 
-
-        #self.data_log.log_data(elapsed, sensor_data, action)
+        self.motorQueue.put(self.state)
+        #self.data_log.log_data(elapsed, sensor_data, self.state)
         
             
     def get_log(self):
@@ -126,13 +102,5 @@ class RobotControl:
             
     
                    
-    
-if __name__ == '__main__':
-    import queue
 
-    cmdQueue = queue.Queue()
-    robot = RobotControl()
-    cmdQueue.put('r')
-    robot.run(cmdQueue)
-
-        
+       

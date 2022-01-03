@@ -51,10 +51,14 @@ class MotorControl:
             # Implement changes
             self.left_pwm.ChangeDutyCycle(STANDARD_SPEED + settings['left_accel'])
             self.right_pwm.ChangeDutyCycle(STANDARD_SPEED + settings['right_accel'])
-            GPIO.output(self.left_forward, settings['l_fwd'])
-            GPIO.output(self.left_reverse, settings['l_rev'])
-            GPIO.output(self.right_forward, settings['r_fwd'])
-            GPIO.output(self.right_reverse, settings['r_rev'])
+            if settings['l_fwd'] is not None:
+                GPIO.output(self.left_forward, settings['l_fwd'])
+            if settings['l_rev'] is not None:
+                GPIO.output(self.left_reverse, settings['l_rev'])
+            if settings['r_fwd'] is not None:
+                GPIO.output(self.right_forward, settings['r_fwd'])
+            if settings['r_rev'] is not None:
+                GPIO.output(self.right_reverse, settings['r_rev'])
 
         # Make sure motors off before exiting
         GPIO.output(self.left_forward, 0)
