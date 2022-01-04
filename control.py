@@ -80,17 +80,18 @@ class RobotControl:
         
 
     def dispatch(self, elapsed, sensor_data):
-        # Avoid collision, making sure we have clearance to turn
+        # Avoid collision, making sure we have clearance to turn,
+        # length or robot wheel axis to rear is < 15 cm
         if sensor_data['front_rf'] < MINIMUM_DISTANCE:
-            if (sensor_data['left_rf'] < 15 and sensor_data['right_rf'] < 15):
+            if (sensor_data['left_rf'] <= 15 and sensor_data['right_rf'] <= 15):
                 self.state = 'reverse'
-            elif sensor_data['right_rf'] < 15:
+            elif sensor_data['right_rf'] <= 15:
                 self.state = 'spin_right'
             else:
                 self.state = 'spin_left'
             
         # Keep distance from sides, or veer away from side
-        if self.state in ['forward', 'reverse', 'right', 'left']:
+        elif self.state in ['forward', 'reverse', 'right', 'left']:
             if (sensor_data['left_rf'] <= 15):
                 self.state = 'right'   
             elif (sensor_data['right_rf'] <= 15):
