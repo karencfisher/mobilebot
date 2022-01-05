@@ -13,10 +13,8 @@ except (RuntimeError, ModuleNotFoundError):
     import RPi.GPIO as GPIO
 import numpy as np
 
-#from mpu6050 import mpu6050
+from configuration import *
 
-from configuration import GPIOPins, SAMPLES
-from Kalman import KalmanAngle
 
 class UltrasonicRF:
     def __init__(self, echo, trigger):
@@ -63,8 +61,7 @@ class UltrasonicRF:
             
         # Calculate distance
         elapsed_time = stop_time - start_time
-        d = (elapsed_time * 34300) / 2
-        
+        d = (elapsed_time * 34300) / 2 
         return d
     
     def getAvgRange(self, samples):
@@ -116,16 +113,6 @@ class IRProximity:
         '''
         
         return not GPIO.input(self.pin)
-    
-    
-class GyroAccel:
-    def __init__(self):
-        self.accel_gyro = mpu6050(0x68)
-        
-    def ping(self):
-        gyro = self.accel_gyro.get_gyro_data()
-        accel = self.accel_gyro.get_accel_data()
-        return gyro, accel
         
         
 class SensorsPoll:
@@ -136,9 +123,10 @@ class SensorsPoll:
     flag: shared memory, boolean, consumes flag. True to run, False to exit.
     data: queue to send sensor data
     '''
-    def __init__(self, flag, data):
+    def __init__(self, asynchronous=False, flag=None, data=None):
         self.usrf = {}
         self.ir = {}
+        self.synch = not asynchronous
         self.data = data
         self.flag = flag
         
@@ -154,19 +142,21 @@ class SensorsPoll:
             self.ir[key] = IRProximity(pin)
      
     def run(self):
-        print("start sensor process")
-        while self.flag.value:
+        if not self.synch:
+            print("start sensor process")
+        while self.synch or self.flag.value:
             output = {}
             for key in self.usrf.keys():
                 output[key + '_rf'] = self.usrf[key].getAvgRange(SAMPLES)
             for key in self.ir.keys():
                 output[key + '_ir'] = self.ir[key].ping()
-            # gyro, accel = self.gyro_accel.ping()
-            # for key in ['x', 'y', 'z']:
-            #     output['gyro_' + key] = gyro[key]
-            #     output['accel_' + key] = accel[key]
-            self.data.put(output)
+            if self.synch:
+                return output
+            else:
+                self.data.put(output)
         print("end sensor process")
+        
+    
                           
 
 

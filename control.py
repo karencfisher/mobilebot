@@ -22,23 +22,28 @@ class RobotControl:
 
         self.flag = Value('i', 1)
         self.sensorData = Queue()
-        sp = SensorsPoll(self.flag, self.sensorData)
-        sensor_process = Process(target=sp.run)
-        self.processes = [sensor_process]
+        if ASYNCHRONOUS:
+            sp = SensorsPoll(True, self.flag, self.sensorData)
+            sensor_process = Process(target=sp.run)
+            self.processes = [sensor_process]
 
-        self.motorQueue = Queue()
-        mc = MotorControl(self.flag, self.motorQueue)
-        motor_process = Process(target=mc.run)
-        self.processes.append(motor_process)
+            self.motorQueue = Queue()
+            mc = MotorControl(True, self.flag, self.motorQueue)
+            motor_process = Process(target=mc.run)
+            self.processes.append(motor_process)
+        else:
+            self.sp = SensorsPoll()
+            self.mc = MotorControl()
 
-        self.data_log = DataLog()
+        #self.data_log = DataLog()
         self.running = False
         self.start_time = None
         self.state = 'stopped'
     
     def run(self, commandQueue):
-        for process in self.processes:
-            process.start()
+        if ASYNCHRONOUS:
+            for process in self.processes:
+                process.start()
         while True:
             if not commandQueue.empty():
                 command = commandQueue.get(False)
@@ -51,6 +56,10 @@ class RobotControl:
                 elif command == 'stop' or command == 's':
                     print('halted')
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
+                    if ASYNCHRONOUS:
+                        self.motorQueue.put('stop')
+                    else:
+                        self.mc.run(command='stop')
                     self.running = False
                     self.state = 'stopped'
                 elif command == 'run' or command == 'r':
@@ -61,11 +70,14 @@ class RobotControl:
 
             if self.running:
                 try:
-                    if not self.sensorData.empty():
+                    if ASYNCHRONOUS:
                         sensorData = self.sensorData.get_nowait()
-                        print(sensorData)
-                        elapsed = time.time() - self.start_time
-                        self.dispatch(elapsed, sensorData)  
+                    else:
+                        sensorData = self.sp.run()
+                    print(sensorData)
+                    elapsed = time.time() - self.start_time
+                    self.dispatch(elapsed, sensorData)
+                    time.sleep(.5)
                 except:
                     self.shutdown()
             
@@ -73,35 +85,36 @@ class RobotControl:
        
 
     def shutdown(self):
-        self.flag.value = 0
-        for process in self.processes:
-            process.join()
+        if ASYNCHRONOUS:
+            self.motorQueue.put('stop')
+            self.flag.value = 0
+            for process in self.processes:
+                process.join()
+        else:
+            self.mc.run(command='stop')
         GPIO.cleanup()
         
 
     def dispatch(self, elapsed, sensor_data):
+        # Collision, so back off
+        if sensor_data['left_ir'] or sensor_data['right_ir']:
+            self.state = 'reverse'
+            
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
-        if sensor_data['front_rf'] < MINIMUM_DISTANCE:
-            if (sensor_data['left_rf'] <= 15 and sensor_data['right_rf'] <= 15):
-                self.state = 'reverse'
-            elif sensor_data['right_rf'] <= 15:
-                self.state = 'spin_right'
-            else:
-                self.state = 'spin_left'
-            
-        # Keep distance from sides, or veer away from side
-        elif self.state in ['forward', 'reverse', 'right', 'left']:
-            if (sensor_data['left_rf'] <= 15):
-                self.state = 'right'   
-            elif (sensor_data['right_rf'] <= 15):
-                self.state = 'left'
+        elif (sensor_data['front_rf'] < MINIMUM_DISTANCE or
+          sensor_data['left_rf'] < MINIMUM_DISTANCE or
+          sensor_data['right_rf'] < MINIMUM_DISTANCE):
+            self.state = 'spin_left'
             
         # default go ahead
         else:
             self.state = 'forward'
                 
-        self.motorQueue.put(self.state)
+        if ASYNCHRONOUS:
+            self.motorQueue.put(self.state)
+        else:
+            self.mc.run(command=self.state)
         #self.data_log.log_data(elapsed, sensor_data, self.state)
         
             

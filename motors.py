@@ -17,9 +17,10 @@ class MotorControl:
     flag: boolean shared value, consumed. True to run, False to exit
     commandQueue: queue to listen for changes to motor behavior
     '''
-    def __init__(self, flag, commandQueue):
+    def __init__(self, asynchronous=False, flag=None, commandQueue=None):
         self.flag = flag
         self.commandQueue = commandQueue
+        self.synch = not asynchronous
         motors = GPIOPins['motors']
         for key in motors.keys():
             GPIO.setup(list(motors[key].values()), GPIO.OUT)
@@ -36,13 +37,15 @@ class MotorControl:
                 self.right_forward = motors[key]['drive_p']
                 self.right_reverse = motors[key]['drive_n']
                 
-    def run(self):
-        print('start motors process')
-        while self.flag.value:
-            # Wait for a change
-            if self.commandQueue.empty():
-                continue
-            command = self.commandQueue.get_nowait()
+    def run(self, command=None):
+        if not self.synch:
+            print('start motors process')
+        while self.synch or self.flag.value:
+            if not self.synch:
+                # Wait for a change
+                if self.commandQueue.empty():
+                    continue
+                command = self.commandQueue.get_nowait()
 
             # Look up the settings
             settings = MotorSettings[command]
@@ -59,10 +62,8 @@ class MotorControl:
                 GPIO.output(self.right_forward, settings['r_fwd'])
             if settings['r_rev'] is not None:
                 GPIO.output(self.right_reverse, settings['r_rev'])
+                
+            if self.synch:
+                return
 
-        # Make sure motors off before exiting
-        GPIO.output(self.left_forward, 0)
-        GPIO.output(self.left_reverse, 0)
-        GPIO.output(self.right_forward, 0)
-        GPIO.output(self.right_reverse, 0)
         print('end motor process')

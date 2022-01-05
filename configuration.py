@@ -1,9 +1,23 @@
+# All settings for the robot
+
+# Asynchronous operation. Asynchronous mode runs sensors and motors
+# as independent processes, with queues to send/receive data.
+# In Synchronous mode they run in the same process, polling sensors
+# and responding to sensor data sequentially.
+ASYNCHRONOUS = False
+
+# speed settings (in terns of duty cycles for PWM
+# control of motors
 STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
+
+# Minumum distance in front before turning
 MINIMUM_DISTANCE = 30
+
+# Number of samples from ultrasonic sensors to average
 SAMPLES = 10
 
-
+# GPIO pin assignments
 GPIOPins = {
     'ultrasonicRF': {
         'left': {'trigger': 25, 'echo' : 12},
@@ -20,6 +34,9 @@ GPIOPins = {
     'indicators': {'run_led': 24}
 }
 
+# Defining different behaviors for the motors. Motor directions 1, 0, or None if no change
+# in direction. Accel settings are adjustments to PWM cycle duty for each motor (speed). 0 if
+# standard speed, -INCREMENT to deccelerate by that ratio, or INCREMENT to accelerate by same.
 MotorSettings = {
     'stop': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
