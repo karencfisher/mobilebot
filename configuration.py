@@ -1,11 +1,5 @@
 # All settings for the robot
 
-# Asynchronous operation. Asynchronous mode runs sensors and motors
-# as independent processes, with queues to send/receive data (experimental).
-# In Synchronous mode they run in the same process, polling sensors
-# and responding to sensor data sequentially.
-ASYNCHRONOUS = False
-
 # speed settings (in terns of duty cycles for PWM
 # control of motors
 STANDARD_SPEED = 50

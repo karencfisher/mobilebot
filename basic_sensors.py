@@ -123,12 +123,9 @@ class SensorsPoll:
     flag: shared memory, boolean, consumes flag. True to run, False to exit.
     data: queue to send sensor data
     '''
-    def __init__(self, asynchronous=False, flag=None, data=None):
+    def __init__(self):
         self.usrf = {}
         self.ir = {}
-        self.synch = not asynchronous
-        self.data = data
-        self.flag = flag
         
         usrfs = GPIOPins['ultrasonicRF']
         for key in usrfs.keys():
@@ -142,20 +139,12 @@ class SensorsPoll:
             self.ir[key] = IRProximity(pin)
      
     def run(self):
-        if not self.synch:
-            print("start sensor process")
-        while self.synch or self.flag.value:
-            output = {}
-            for key in self.usrf.keys():
-                output[key + '_rf'] = self.usrf[key].getAvgRange(SAMPLES)
-            for key in self.ir.keys():
-                output[key + '_ir'] = self.ir[key].ping()
-            if self.synch:
-                return output
-            else:
-                self.data.put(output)
-        print("end sensor process")
-        
+        output = {}
+        for key in self.usrf.keys():
+            output[key + '_rf'] = self.usrf[key].getAvgRange(SAMPLES)
+        for key in self.ir.keys():
+            output[key + '_ir'] = self.ir[key].ping()
+        return output
     
                           
 

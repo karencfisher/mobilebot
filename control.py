@@ -1,4 +1,3 @@
-from multiprocessing import Process, Value, Queue
 import csv
 import time
 import random
@@ -21,30 +20,15 @@ class RobotControl:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
 
-        if ASYNCHRONOUS:
-            self.flag = Value('i', 1)
-            self.sensorData = Queue(1)
-            sp = SensorsPoll(True, self.flag, self.sensorData)
-            sensor_process = Process(target=sp.run)
-            self.processes = [sensor_process]
-
-            self.motorQueue = Queue(1)
-            mc = MotorControl(True, self.flag, self.motorQueue)
-            motor_process = Process(target=mc.run)
-            self.processes.append(motor_process)
-        else:
-            self.sp = SensorsPoll()
-            self.mc = MotorControl()
+        self.sp = SensorsPoll()
+        self.mc = MotorControl()
 
         #self.data_log = DataLog()
         self.running = False
         self.start_time = None
-        self.state = 0
+        self.state = 'stopped'
     
     def run(self, commandQueue):
-        if ASYNCHRONOUS:
-            for process in self.processes:
-                process.start()
         while True:
             if not commandQueue.empty():
                 command = commandQueue.get(False)
@@ -57,10 +41,7 @@ class RobotControl:
                 elif command == 'stop' or command == 's':
                     print('halted')
                     GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
-                    if ASYNCHRONOUS:
-                        self.motorQueue.put('stop')
-                    else:
-                        self.mc.run(command='stop')
+                    self.mc.run(command='stop')
                     self.running = False
                 elif command == 'run' or command == 'r':
                     self.start_time = time.time()
@@ -70,10 +51,7 @@ class RobotControl:
 
             if self.running:
                 try:
-                    if ASYNCHRONOUS:
-                        sensorData = self.sensorData.get()
-                    else:
-                        sensorData = self.sp.run()
+                    sensorData = self.sp.run()
                     print(sensorData)
                     elapsed = time.time() - self.start_time
                     self.dispatch(elapsed, sensorData)
@@ -86,20 +64,15 @@ class RobotControl:
        
 
     def shutdown(self):
-        if ASYNCHRONOUS:
-            self.motorQueue.put('stop')
-            self.flag.value = 0
-            for process in self.processes:
-                process.join()
-        else:
-            self.mc.run(command='stop')
+        self.mc.run(command='stop')
         GPIO.cleanup()
         
 
     def dispatch(self, elapsed, sensor_data):
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
-            states = [('reverse', None)]
+            state = 'reverse'
+            duration = None
             
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
@@ -107,29 +80,31 @@ class RobotControl:
         elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
         
             if sensor_data['left_rf'] < MINIMUM_DISTANCE:
-                states = [('spin_left', 0.5)]
+                state = 'spin_left'
+                duration = 0.5
             
             elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
-                states = [('spin_right', 0.5)]
+                state = 'spin_right'
+                duration = 0.5
                 
             else:
                 option = random.choice(['spin_left', 'spin_right'])
-                states = [(option, 0.5)]
+                state = option
+                duration = 0.5
             
         # default go ahead
         else:
-            states = [('forward', None)]
+            state = 'forward'
+            duration = None
                 
-        for state, duration in states:
-            if ASYNCHRONOUS:
-                self.motorQueue.put(state)
-            else:
-                self.mc.run(command=state)
+        if state != self.state:
+            self.mc.run(command=state)
             if duration is not None:
                 time.sleep(duration)
-        #self.data_log.log_data(elapsed, sensor_data, self.state)
-        
+            self.state = state
             
+        #self.data_log.log_data(elapsed, sensor_data, self.state)
+         
     def get_log(self):
         return self.data_log
             
