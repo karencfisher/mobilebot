@@ -71,15 +71,16 @@ class RobotControl:
             if self.running:
                 try:
                     if ASYNCHRONOUS:
-                        sensorData = self.sensorData.get_nowait()
+                        sensorData = self.sensorData.get()
                     else:
                         sensorData = self.sp.run()
                     print(sensorData)
                     elapsed = time.time() - self.start_time
                     self.dispatch(elapsed, sensorData)
                     #time.sleep(.5)
-                except:
+                except Exception as inst:
                     self.shutdown()
+                    raise
             
         print('exiting thread...')
        
