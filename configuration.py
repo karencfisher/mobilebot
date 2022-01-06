@@ -4,7 +4,7 @@
 # as independent processes, with queues to send/receive data (experimental).
 # In Synchronous mode they run in the same process, polling sensors
 # and responding to sensor data sequentially.
-ASYNCHRONOUS = True
+ASYNCHRONOUS = False
 
 # speed settings (in terns of duty cycles for PWM
 # control of motors
@@ -12,7 +12,7 @@ STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
 
 # Minumum distance in front before turning
-MINIMUM_DISTANCE = 18
+MINIMUM_DISTANCE = 25
 
 # Number of samples from ultrasonic sensors to average
 SAMPLES = 10

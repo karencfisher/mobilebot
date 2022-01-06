@@ -99,22 +99,22 @@ class RobotControl:
     def dispatch(self, elapsed, sensor_data):
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
-            states = [('stop', 0.1), ('reverse', None)]
+            states = [('reverse', None)]
             
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
         
         elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
+        
+            if sensor_data['left_rf'] < MINIMUM_DISTANCE:
+                states = [('spin_left', 0.5)]
             
-            if sensor_data['left_rf'] < sensor_data['right_rf']:
-                states = [('stop', 0.1), ('spin_right', 0.1)]
-                
-            elif sensor_data['right_rf'] < sensor_data['left_rf']:
-                states = [('stop', 0.1), ('spin_left', 0.1)]
+            elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
+                states = [('spin_right', 0.5)]
                 
             else:
                 option = random.choice(['spin_left', 'spin_right'])
-                states = [('stop', 0.1), (option, 0.1)]
+                states = [(option, 0.5)]
             
         # default go ahead
         else:
