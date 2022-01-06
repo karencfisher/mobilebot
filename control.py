@@ -39,7 +39,7 @@ class RobotControl:
         #self.data_log = DataLog()
         self.running = False
         self.start_time = None
-        self.state = 'stopped'
+        self.state = 0
     
     def run(self, commandQueue):
         if ASYNCHRONOUS:
@@ -62,7 +62,6 @@ class RobotControl:
                     else:
                         self.mc.run(command='stop')
                     self.running = False
-                    self.state = 'stopped'
                 elif command == 'run' or command == 'r':
                     self.start_time = time.time()
                     print('running...')
@@ -99,24 +98,34 @@ class RobotControl:
     def dispatch(self, elapsed, sensor_data):
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
-            self.state = 'reverse'
+            states = [('stop', 0.1), ('reverse', None)]
             
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
-        elif (sensor_data['front_rf'] < MINIMUM_DISTANCE or
-          sensor_data['left_rf'] < MINIMUM_DISTANCE or
-          sensor_data['right_rf'] < MINIMUM_DISTANCE):
-            direction = random.randint(0, 1)
-            self.state = 'spin_left' if direction < 0.5 else 'spin_right'
+        
+        elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
+            
+            if sensor_data['left_rf'] < sensor_data['right_rf']:
+                states = [('stop', 0.1), ('spin_right', 0.1)]
+                
+            elif sensor_data['right_rf'] < sensor_data['left_rf']:
+                states = [('stop', 0.1), ('spin_left', 0.1)]
+                
+            else:
+                option = random.choice(['spin_left', 'spin_right'])
+                states = [('stop', 0.1), (option, 0.1)]
             
         # default go ahead
         else:
-            self.state = 'forward'
+            states = [('forward', None)]
                 
-        if ASYNCHRONOUS:
-            self.motorQueue.put(self.state)
-        else:
-            self.mc.run(command=self.state)
+        for state, duration in states:
+            if ASYNCHRONOUS:
+                self.motorQueue.put(state)
+            else:
+                self.mc.run(command=state)
+            if duration is not None:
+                time.sleep(duration)
         #self.data_log.log_data(elapsed, sensor_data, self.state)
         
             

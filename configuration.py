@@ -12,7 +12,7 @@ STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
 
 # Minumum distance in front before turning
-MINIMUM_DISTANCE = 30
+MINIMUM_DISTANCE = 18
 
 # Number of samples from ultrasonic sensors to average
 SAMPLES = 10
