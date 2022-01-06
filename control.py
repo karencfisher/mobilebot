@@ -21,14 +21,14 @@ class RobotControl:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
 
-        self.flag = Value('i', 1)
-        self.sensorData = Queue()
         if ASYNCHRONOUS:
+            self.flag = Value('i', 1)
+            self.sensorData = Queue(1)
             sp = SensorsPoll(True, self.flag, self.sensorData)
             sensor_process = Process(target=sp.run)
             self.processes = [sensor_process]
 
-            self.motorQueue = Queue()
+            self.motorQueue = Queue(1)
             mc = MotorControl(True, self.flag, self.motorQueue)
             motor_process = Process(target=mc.run)
             self.processes.append(motor_process)
