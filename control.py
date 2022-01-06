@@ -1,6 +1,7 @@
 from multiprocessing import Process, Value, Queue
 import csv
 import time
+import random
 
 try:
     import RPi.GPIO as GPIO
@@ -77,7 +78,7 @@ class RobotControl:
                     print(sensorData)
                     elapsed = time.time() - self.start_time
                     self.dispatch(elapsed, sensorData)
-                    time.sleep(.5)
+                    #time.sleep(.5)
                 except:
                     self.shutdown()
             
@@ -105,7 +106,8 @@ class RobotControl:
         elif (sensor_data['front_rf'] < MINIMUM_DISTANCE or
           sensor_data['left_rf'] < MINIMUM_DISTANCE or
           sensor_data['right_rf'] < MINIMUM_DISTANCE):
-            self.state = 'spin_left'
+            direction = random.randint(0, 1)
+            self.state = 'spin_left' if direction < 0.5 else 'spin_right'
             
         # default go ahead
         else:
