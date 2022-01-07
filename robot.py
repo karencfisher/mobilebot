@@ -1,41 +1,65 @@
-import threading
-import queue
-
+import csv
+import time
+import random
 import easygui as eg
 
-from control import RobotControl
+from multiprocessing import Process, Value, Queue
+
+try:
+    import RPi.GPIO as GPIO
+except (RuntimeError, ModuleNotFoundError):
+    import fake_rpigpio.utils
+    fake_rpigpio.utils.install()
+    import RPi.GPIO as GPIO
+
+from configuration import *
+from autonomic import Autonomic
+from dataLog import DataLog
 
 
+class RobotControl:
+    def __init__(self):    
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(GPIOPins['indicators']['run_led'], GPIO.OUT)
 
-def main():
-    robot_control = RobotControl()
-    # log = robot_control.get_log()
-    # result = eg.enterbox("Enter existing log file")
-    # if result is not None:
-    #     log.load(result)
-
-    command_queue = queue.Queue()
-    control_thread = threading.Thread(target=robot_control.run,
-                                    args=(command_queue,))
-    control_thread.start()
-    print('control thread started')
-
-    while True:
-        command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
-        command_queue.put(command)
-        if command == 'exit' or command == 'x':
-            control_thread.join()
-            break
-    print('exited')
-
-
-if __name__ == '__main__':
-    main()
-
-# log.dump('test.csv')
-
+        self.flag = Value('i', 1)
+        self.autoQueue = Queue()
+        self.autonomic = Autonomic(self.flag, self.autoQueue)
+        self.autonomicProcess = Process(target=self.autonomic.run)
+        self.running = True
     
+    def run(self):
+        self.autonomicProcess.start()
+        while self.running:
+            command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
+            if command == 'exit' or command == 'x':
+                print('exiting...')
+                GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
+                self.shutdown()
+                self.running = False
+            elif command == 'stop' or command == 's':
+                print('halting...')
+                GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
+                self.autoQueue.put(('halt', None))
+            elif command == 'run' or command == 'r':
+                self.start_time = time.time()
+                self.autoQueue.put(('resume', None))
+                print('running...')
+                GPIO.output(GPIOPins['indicators']['run_led'], GPIO.HIGH)
+       
+    def shutdown(self):
+        self.autoQueue.put(('halt', None))
+        self.flag.value = 0
+        self.autonomicProcess.join()
+        GPIO.cleanup()
+
         
+def main():
+    control = RobotControl()
+    control.run()
+            
+if __name__ == '__main__':
+    main() 
+                   
 
-
-
+       
