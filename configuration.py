@@ -6,7 +6,7 @@ STANDARD_SPEED = 60
 INCREMENT = STANDARD_SPEED * 0.2
 
 # Minumum distance in front before turning
-MINIMUM_DISTANCE = 30
+MINIMUM_DISTANCE = 20
 
 # Number of samples from ultrasonic sensors to average
 SAMPLES = 10
@@ -44,9 +44,9 @@ MotorSettings = {
     'decelerate': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                    'left_accel': -INCREMENT, 'right_accel': -INCREMENT},
     
-    'spin_left': {'l_fwd': 0, 'l_rev': 1, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
+    'spin_left': {'l_fwd': 0, 'l_rev': 1, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
-    'spin_right': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 1, 'left_accel': 0, 'right_accel': 0},
+    'spin_right': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 1, 'left_accel': 0, 'right_accel': 0},
     
     'left': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                   'left_accel': 0, 'right_accel': INCREMENT},

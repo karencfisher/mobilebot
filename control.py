@@ -76,21 +76,19 @@ class RobotControl:
             
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
+        elif sensor_data['left_rf'] < MINIMUM_DISTANCE:
+                state = 'spin_left'
+                duration = 0.5
+            
+        elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
+            state = 'spin_right'
+            duration = 0.5
+        
         
         elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
-        
-            if sensor_data['left_rf'] < MINIMUM_DISTANCE:
-                state = 'spin_left'
-                duration = 0.25
-            
-            elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
-                state = 'spin_right'
-                duration = 0.25
-                
-            else:
-                option = random.choice(['spin_left', 'spin_right'])
-                state = option
-                duration = 0.25
+            option = random.choice(['spin_left', 'spin_right'])
+            state = option
+            duration = 0.5
             
         # default go ahead
         else:
