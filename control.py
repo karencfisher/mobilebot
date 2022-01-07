@@ -81,16 +81,16 @@ class RobotControl:
         
             if sensor_data['left_rf'] < MINIMUM_DISTANCE:
                 state = 'spin_left'
-                duration = 0.5
+                duration = 0.25
             
             elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
                 state = 'spin_right'
-                duration = 0.5
+                duration = 0.25
                 
             else:
                 option = random.choice(['spin_left', 'spin_right'])
                 state = option
-                duration = 0.5
+                duration = 0.25
             
         # default go ahead
         else:
