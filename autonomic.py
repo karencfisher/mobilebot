@@ -50,31 +50,27 @@ class Autonomic:
     def dispatch(self, elapsed, sensor_data):
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
-            state = 'reverse'
-            duration = None
+            states = [('reverse', None)]
             
         # Avoid collision, making sure we have clearance to turn,
         # length or robot wheel axis to rear is < 15 cm
-        elif sensor_data['left_rf'] < MINIMUM_DISTANCE:
-                state = 'spin_left'
-                duration = 0.5
-            
-        elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
-            state = 'spin_right'
-            duration = 0.5
-        
         elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
             option = random.choice(['spin_left', 'spin_right'])
-            state = option
-            duration = 0.5
+            states = [('reverse', 0.1), (option, 0.5)]
+            
+        elif sensor_data['left_rf'] < MINIMUM_DISTANCE:
+            states = [('spin_left', 0.5)]
+            
+        elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
+            states = [('spin_right', 0.5)]
             
         # default go ahead
         else:
-            state = 'forward'
-            duration = None
+            states = [('forward', None)]
                 
-        if state != self.state:
-            self.mc.run(command=state)
-            if duration is not None:
-                time.sleep(duration)
-            self.state = state
+        for state, duration in states:
+            if state != self.state:
+                self.mc.run(command=state)
+                if duration is not None:
+                    time.sleep(duration)
+                self.state = state
