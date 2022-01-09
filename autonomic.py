@@ -52,23 +52,41 @@ class Autonomic:
         if sensor_data['left_ir'] or sensor_data['right_ir']:
             states = [('reverse', None)]
             
-        # Avoid collision, making sure we have clearance to turn,
-        # length or robot wheel axis to rear is < 15 cm
         elif sensor_data['front_rf'] < MINIMUM_DISTANCE:
-            option = random.choice(['spin_left', 'spin_right'])
-            states = [('reverse', 0.1), (option, 0.5)]
+            option = random.choice(['left', 'right'])
+            states = [('reverse', 0.5), (option, 1)]
             
         elif sensor_data['left_rf'] < MINIMUM_DISTANCE:
-            states = [('spin_left', 0.5)]
+            states = [('reverse', 0.5), ('right', 1)]
             
         elif sensor_data['right_rf'] < MINIMUM_DISTANCE:
-            states = [('spin_right', 0.5)]
+            states = [('reverse', 0.5), ('left', 1)]   
             
-        # default go ahead
+        # Avoid collision, making sure we have clearance to turn,
+        # length or robot wheel axis to rear is < 15 cm
+        elif sensor_data['front_rf'] < WARNING_DISTANCE:
+            option = random.choice(['left', 'right'])
+            states = [(option, 1)]
+            
+        elif sensor_data['left_rf'] < WARNING_DISTANCE:
+            states = [('right', 1)]
+            
+        elif sensor_data['right_rf'] < WARNING_DISTANCE:
+            states = [('left', 1)]
+            
+        # default go ahead (add some stochastic behavior)
         else:
-            states = [('forward', None)]
+            option = random.randint(1, 100)
+            if option <= 60:
+                states = [('forward', None)]
+            elif option <= 80:
+                states = [('veer_left', None)]
+            else:
+                states = [('veer_right', None)]
                 
+        # execute
         for state, duration in states:
+            print(state, duration)
             if state != self.state:
                 self.mc.run(command=state)
                 self.state = state

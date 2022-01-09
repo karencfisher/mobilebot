@@ -6,7 +6,8 @@ STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
 
 # Minumum distance in front before turning
-MINIMUM_DISTANCE = 20
+WARNING_DISTANCE = 30
+MINIMUM_DISTANCE = 15
 
 # Number of samples from ultrasonic sensors to average
 SAMPLES = 10
@@ -47,10 +48,14 @@ MotorSettings = {
     'spin_left': {'l_fwd': 0, 'l_rev': 1, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
     
     'spin_right': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 1, 'left_accel': 0, 'right_accel': 0},
-    
-    'left': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
+
+    'veer_left': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                   'left_accel': 0, 'right_accel': INCREMENT},
     
-    'right': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
+    'veer_right': {'l_fwd': None, 'l_rev': None, 'r_fwd': None, 'r_rev': None,
                   'left_accel': INCREMENT, 'right_accel': 0},
+    
+    'left': {'l_fwd': 0, 'l_rev': 0, 'r_fwd': 1, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0},
+    
+    'right': {'l_fwd': 1, 'l_rev': 0, 'r_fwd': 0, 'r_rev': 0, 'left_accel': 0, 'right_accel': 0}
 }
