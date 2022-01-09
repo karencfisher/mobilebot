@@ -71,6 +71,6 @@ class Autonomic:
         for state, duration in states:
             if state != self.state:
                 self.mc.run(command=state)
-                if duration is not None:
-                    time.sleep(duration)
                 self.state = state
+            if duration is not None:
+                time.sleep(duration)

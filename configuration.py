@@ -2,7 +2,7 @@
 
 # speed settings (in terns of duty cycles for PWM
 # control of motors
-STANDARD_SPEED = 60
+STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
 
 # Minumum distance in front before turning
