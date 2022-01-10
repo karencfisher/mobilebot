@@ -15,5 +15,5 @@ Raspberry PI 3b SBC.
 
 ## Components
 
-![](mobilebot_diagram.jpeg)
+![diagram](mobilebot_diagram.jpeg)
 
