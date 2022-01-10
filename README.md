@@ -25,7 +25,8 @@ Raspberry PI 3b SBC.
 **UI** - Allows start/stop of robot, or exit.
 
 **Visual Process** - Will accept visual data from camera for object detection and can direct robot towards/away from 
-objects. Will over ride the "autonomic" process.
+objects. Will over ride the "autonomic" process to provide more goal oriented navigation.
 
-**Autonomic Process** - Basic obstacle avoidance using data from Ultrasonic and IR sensors. 
+**Autonomic Process** - Basic obstacle avoidance using data from Ultrasonic and IR sensors. Motor control. Navigation
+is by simple rules with some stochastic variation.
 
