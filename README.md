@@ -17,8 +17,10 @@ Raspberry PI 3b SBC.
 
 ![diagram](Mobilebot_diagram.jpeg)
 
-**UI** - Allows start/stop of robot, or exit. 
+**UI** - Allows start/stop of robot, or exit.
+
 **Visual Process** - Will accept visual data from camera for object detection and can direct robot towards/away from 
-objects. Will over ride the "autonomic" process
+objects. Will over ride the "autonomic" process.
+
 **Autonomic Process** - Basic obstacle avoidance using data from Ultrasonic and IR sensors. 
 
