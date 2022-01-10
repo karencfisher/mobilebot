@@ -6,7 +6,7 @@ Developing basic code for a two wheel differential drive mobile robot, running o
 
 ## Features
 
-Modified from mobile robot kit from Electronics42
+Modified from mobile robot kit from 42 Electronics (https://42electronics.com/)
 
 Raspberry PI 3b SBC.
 
