@@ -13,5 +13,7 @@ Raspberry PI 3b SBC.
 2 IR proximity sensors on the front, at 30% angles  
 1 forward facing camera  
 
-  
+## Components
+
+![](mobilebot_diagram.jpg)
 
