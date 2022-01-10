@@ -6,6 +6,8 @@ Developing basic code for a two wheel differential drive mobile robot, running o
 
 ## Features
 
+Modified from mobile robot kit from Electronics42
+
 Raspberry PI 3b SBC.
 
 "Headless" control using VNC
