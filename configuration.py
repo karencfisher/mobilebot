@@ -9,6 +9,9 @@ INCREMENT = STANDARD_SPEED * 0.2
 WARNING_DISTANCE = 30
 MINIMUM_DISTANCE = 15
 
+# Number of seconds before we determine robot is stuck
+STUCK_TIMEOUT = 5
+
 # Number of samples from ultrasonic sensors to average
 SAMPLES = 10
 
