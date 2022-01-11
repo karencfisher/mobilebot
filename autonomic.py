@@ -53,7 +53,7 @@ class Autonomic:
         # Determine if stuck by no changes in rangefinder data
         current = [sensor_data['front_rf'], sensor_data['left_rf'],
                   sensor_data['right_rf']]
-        if all(current == self.previousSensors):
+        if current == self.previousSensors:
             # Are we in this state now for STUCK_TIMEOUT or more seconds?
             if self.previousTime > 0 and elapsed - self.previousTime >= STUCK_TIMEOUT:
                 # For now we'll just halt
