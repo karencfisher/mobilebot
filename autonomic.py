@@ -23,8 +23,6 @@ class Autonomic:
         self.start_time = time.time()
         self.state = 'stop'
         self.running = False
-        self.previousSensors = [0, 0, 0]
-        self.previousTime = self.start_time
 
     def run(self):
         print("Start autonomic process")
@@ -50,24 +48,6 @@ class Autonomic:
         print('Ending autonomic process')   
 
     def dispatch(self, elapsed, sensor_data):
-        # Determine if stuck by no changes in rangefinder data
-        current = [sensor_data['front_rf'], sensor_data['left_rf'],
-                  sensor_data['right_rf']]
-        if current == self.previousSensors:
-            # Are we in this state now for STUCK_TIMEOUT or more seconds?
-            if self.previousTime > 0 and elapsed - self.previousTime >= STUCK_TIMEOUT:
-                # For now we'll just halt
-                self.mc.run(command='stop')
-                self.state = 'stop'
-                self.running = False
-                print('Robot stuck!')
-
-                # Reset previous states
-                self.previousTime = 0
-                self.previousSensors = [0, 0, 0]
-        else:
-            self.previousSensors = current
-            self.previousTime = elapsed
 
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
