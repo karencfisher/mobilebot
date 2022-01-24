@@ -2,7 +2,7 @@
 
 Developing basic code for a two wheel differential drive mobile robot, running on a Raspberry Pi 3 SBC. 
 
-![Screenshot](mobilebot2.jpg)
+![Screenshot](images/mobilebot2.jpg)
 
 ## Features
 
@@ -24,7 +24,7 @@ Raspberry PI 3b SBC.
 
 ## Components
 
-![diagram](Mobilebot_diagram.jpeg)
+![diagram](images/Mobilebot_diagram.jpeg)
 
 **UI** - Allows start/stop of robot, or exit.
 

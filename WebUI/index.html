@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .container {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: auto;
+            margin-bottom: auto;
+            align-content: center;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style>
+        
+    <script>
+        async function sendCommand(command) {
+            url = "./command/" + command;
+            let myObject = await fetch(url);
+            let myText = await myObject.text();
+            document.getElementById("status").innerHTML = myText;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="center">
+            <img src="run_icon.jpg" alt="Run Icon" onClick="sendCommand('run')">
+            <img src="halt_icon.jpg" alt="Halt Icon" onClick="sendCOmmand('halt')">
+        </div>
+        
+        <div class="center" id="status">
+            <h3>Ready</h3>
+        </div>
+    </div>
+</body>
+</html>
