@@ -1,5 +1,6 @@
 import time
 import random
+import numpy as np
 
 try:
     import RPi.GPIO as GPIO
@@ -14,6 +15,33 @@ from motors import MotorControl
 from dataLog import DataLog
 
 
+class Distances:
+    '''
+    Basically, a circular buffer, which we can get the mean and
+    variance of the values it contains.
+    '''
+    def __init__(self, n_max):
+        self.data = np.zeros(shape=(n_max), dtype='float')
+        self.n_count = 0
+        self.n_max = n_max
+
+    def push(self, data):
+        self.data[self.n_count % self.n_max] = data
+        self.n_count += 1
+        
+    def get_stats(self):
+        '''
+        Get mean and variance of values
+        If the buffer is not yet full (warmed up) we return
+        None.
+        '''
+        if self.n_count < self.n_max - 1:
+            return None
+        mean = np.mean(self.data)
+        variance = np.std(self.data)
+        return mean, variance
+
+
 class Autonomic:
     def __init__(self, flag, commandQueue):
         self.flag = flag
@@ -23,6 +51,7 @@ class Autonomic:
         self.start_time = time.time()
         self.state = 'stop'
         self.running = False
+        self.log = DataLog()
 
     def run(self):
         print("Start autonomic process")
@@ -33,6 +62,7 @@ class Autonomic:
                     self.mc.run(command='stop')
                     self.state = 'stop'
                     self.running = False
+                    self.log.dump('autonomic.csv')
                 elif command == 'resume':
                     self.running = True
                 else:
@@ -41,13 +71,14 @@ class Autonomic:
                         time.sleep(duration)
             elif self.running:
                 sensorData = self.sp.run()
-                print(sensorData)
                 elapsed = time.time() - self.start_time
-                self.dispatch(elapsed, sensorData)
+                state = self.dispatch(sensorData)
+                print(sensorData, state)
+                self.log.log_data(elapsed, sensorData, state)
         self.mc.run(command='stop')
         print('Ending autonomic process')   
 
-    def dispatch(self, elapsed, sensor_data):
+    def dispatch(self, sensor_data):
 
         # Collision, so back off
         if sensor_data['left_ir'] or sensor_data['right_ir']:
@@ -87,9 +118,9 @@ class Autonomic:
                 
         # execute
         for state, duration in states:
-            print(state, duration)
             if state != self.state:
                 self.mc.run(command=state)
                 self.state = state
             if duration is not None:
                 time.sleep(duration)
+        return states

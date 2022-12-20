@@ -5,9 +5,15 @@
 STANDARD_SPEED = 50
 INCREMENT = STANDARD_SPEED * 0.2
 
+# interval between pinging sensors (in seconds)
+INTERVAL = 0.5
+
 # Minumum distance in front before turning
 WARNING_DISTANCE = 30
 MINIMUM_DISTANCE = 15
+
+# difference in distance suggesting we're stuck
+STUCK_THRESHOLD = 2
 
 # Number of seconds before we determine robot is stuck
 STUCK_TIMEOUT = 5

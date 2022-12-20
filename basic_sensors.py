@@ -25,7 +25,6 @@ class UltrasonicRF:
             echo - GPIO pin for echo
             trigger - GPIO pin fo trigger
         '''
-        
         self.echo = echo
         self.trigger = trigger
         
@@ -90,7 +89,6 @@ class UltrasonicRF:
             distance = np.NAN
             
         return distance
-    
     
     
 class IRProximity:

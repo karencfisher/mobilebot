@@ -1,6 +1,4 @@
-import csv
 import time
-import random
 import easygui as eg
 
 from multiprocessing import Process, Value, Queue
@@ -14,7 +12,6 @@ except (RuntimeError, ModuleNotFoundError):
 
 from configuration import *
 from autonomic import Autonomic
-from dataLog import DataLog
 
 
 class RobotControl:
@@ -52,7 +49,6 @@ class RobotControl:
         self.flag.value = 0
         self.autonomicProcess.join()
         GPIO.cleanup()
-
         
 def main():
     control = RobotControl()
