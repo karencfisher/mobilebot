@@ -21,12 +21,12 @@ class Distances:
     variance of the values it contains.
     '''
     def __init__(self, n_max):
-        self.data = np.zeros(shape=(n_max), dtype='float')
+        self.data = np.zeros(shape=(n_max, 3), dtype='float')
         self.n_count = 0
         self.n_max = n_max
 
     def push(self, data):
-        self.data[self.n_count % self.n_max] = data
+        self.data[self.n_count % self.n_max, :] = data
         self.n_count += 1
         
     def get_stats(self):
@@ -37,9 +37,8 @@ class Distances:
         '''
         if self.n_count < self.n_max - 1:
             return None
-        mean = np.mean(self.data)
-        variance = np.std(self.data)
-        return mean, variance
+        variance = np.std(self.data, axis=0)
+        return variance
 
 
 class Autonomic:
@@ -52,6 +51,7 @@ class Autonomic:
         self.state = 'stop'
         self.running = False
         self.log = DataLog()
+        self.distances = Distances(10)
 
     def run(self):
         print("Start autonomic process")
@@ -59,10 +59,7 @@ class Autonomic:
             if not self.commandQueue.empty():
                 command, duration = self.commandQueue.get(False)
                 if command == 'halt':
-                    self.mc.run(command='stop')
-                    self.state = 'stop'
-                    self.running = False
-                    self.log.dump('autonomic.csv')
+                    self.halt()
                 elif command == 'resume':
                     self.running = True
                 else:
@@ -71,12 +68,37 @@ class Autonomic:
                         time.sleep(duration)
             elif self.running:
                 sensorData = self.sp.run()
+                self.distances.push([sensorData['left_rf'], 
+                                     sensorData['front_rf'],
+                                     sensorData['right_rf']])
                 elapsed = time.time() - self.start_time
                 state = self.dispatch(sensorData)
+
+                vars = self.distances.get_stats()
+                if vars is None:
+                    sensorData['left_var'] = np.nan
+                    sensorData['front_var'] = np.nan
+                    sensorData['right_var'] = np.nan
+                else:
+                    sensorData['left_var'] = vars[0]
+                    sensorData['front_var'] = vars[1]
+                    sensorData['right_var'] = vars[2]
+
                 print(sensorData, state)
                 self.log.log_data(elapsed, sensorData, state)
+
+                if vars is not None and np.any(vars < 1):
+                    print('Stuck!')
+                    self.halt()
+
         self.mc.run(command='stop')
-        print('Ending autonomic process')   
+        print('Ending autonomic process')
+
+    def halt(self):
+        self.mc.run(command='stop')
+        self.state = 'stop'
+        self.running = False
+        self.log.dump('autonomic.csv')   
 
     def dispatch(self, sensor_data):
 

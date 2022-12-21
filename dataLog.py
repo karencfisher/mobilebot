@@ -7,8 +7,11 @@ class DataLog:
     def log_data(self, time_stamp, sensor_data, action):
         self.log.append([time_stamp,
                          sensor_data['left_rf'],
+                         sensor_data['left_var'],
                          sensor_data['front_rf'],
+                         sensor_data['front_var'],
                          sensor_data['right_rf'],
+                         sensor_data['right_var'],
                          sensor_data['left_ir'],
                          sensor_data['right_ir'],
                          action])
@@ -16,8 +19,11 @@ class DataLog:
     def dump(self, filepath):
         headers = ['time_stamp',
                    'left_rf',
+                   'left_var',
                    'front_rf',
+                   'front_var',
                    'right_rf',
+                   'right_var',
                    'left_ir',
                    'right_ir',
                    'action']

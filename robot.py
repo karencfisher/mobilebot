@@ -31,6 +31,7 @@ class RobotControl:
             command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
             if command == 'exit' or command == 'x':
                 print('exiting...')
+                self.autoQueue.put(('halt', None))
                 GPIO.output(GPIOPins['indicators']['run_led'], GPIO.LOW)
                 self.shutdown()
                 self.running = False
