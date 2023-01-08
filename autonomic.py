@@ -89,6 +89,7 @@ class Autonomic:
 
                 if vars is not None and np.any(vars < 1):
                     print('Stuck!')
+                    self.log.log_data(elapsed, sensorData, [('stuck', None)])
                     self.halt()
 
         self.mc.run(command='stop')
@@ -131,9 +132,9 @@ class Autonomic:
         # default go ahead (add some stochastic behavior)
         else:
             option = random.randint(1, 100)
-            if option <= 60:
+            if option <= 80:
                 states = [('forward', None)]
-            elif option <= 80:
+            elif option <= 90:
                 states = [('veer_left', None)]
             else:
                 states = [('veer_right', None)]
