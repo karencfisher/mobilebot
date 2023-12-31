@@ -2,7 +2,7 @@
 
 # speed settings (in terns of duty cycles for PWM
 # control of motors
-STANDARD_SPEED = 50
+STANDARD_SPEED = 60
 INCREMENT = STANDARD_SPEED * 0.2
 
 # interval between pinging sensors (in seconds)
