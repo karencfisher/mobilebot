@@ -13,6 +13,7 @@ from configuration import *
 from basic_sensors import SensorsPoll
 from motors import MotorControl
 from dataLog import DataLog
+from talker import talker
 
 
 class Distances:
@@ -52,6 +53,7 @@ class Autonomic:
         self.running = False
         self.log = DataLog()
         self.distances = Distances(10)
+        self.talker = talker()
 
     def run(self):
         print("Start autonomic process")
@@ -89,6 +91,7 @@ class Autonomic:
 
                 if vars is not None and np.any(vars < 1):
                     print('Stuck!')
+                    self.talker.talk('Help me! I am stuck!')
                     self.log.log_data(elapsed, sensorData, [('stuck', None)])
                     self.halt()
 
