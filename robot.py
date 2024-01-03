@@ -12,6 +12,7 @@ except (RuntimeError, ModuleNotFoundError):
 
 from configuration import *
 from autonomic import Autonomic
+from object_detection import ObjectDetection
 
 
 class RobotControl:
@@ -21,11 +22,17 @@ class RobotControl:
 
         self.flag = Value('i', 1)
         self.autoQueue = Queue()
-        self.autonomic = Autonomic(self.flag, self.autoQueue)
+        self.dataQueue = Queue()
+        
+        self.objectTracker = ObjectDetection(['cup'], 0.45, self.flag, self.dataQueue)
+        self.trackerProcess = Process(target=self.objectTracker.run)
+        
+        self.autonomic = Autonomic(self.flag, self.autoQueue, self.dataQueue)
         self.autonomicProcess = Process(target=self.autonomic.run)
         self.running = True
     
     def run(self):
+        self.trackerProcess.start()
         self.autonomicProcess.start()
         while self.running:
             command = eg.enterbox("command: 'run (r)', 'stop (s)', 'exit (x)'")
@@ -48,6 +55,7 @@ class RobotControl:
     def shutdown(self):
         self.autoQueue.put(('halt', None))
         self.flag.value = 0
+        self.trackerProcess.join()
         self.autonomicProcess.join()
         GPIO.cleanup()
         

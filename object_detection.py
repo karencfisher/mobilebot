@@ -6,9 +6,12 @@ from picamera import PiCamera
 
 
 class ObjectDetection:
-    def __init__(self, objects, threshold):
+    def __init__(self, objects, threshold, flag, dataQueue, display=True):
+        self.flag = flag
+        self.dataQueue = dataQueue
         self.objects = objects
         self.threshold = threshold
+        self.display = display
 
         configPath = 'model/ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
         weightsPath = 'model/frozen_inference_graph.pb'
@@ -38,15 +41,18 @@ class ObjectDetection:
                     objectInfo.append([box, className])
         return objectInfo
 
-    def detect_objects(self, display=True):
+    def run(self):
         start_time = time.time()
         frame_count = 0
 
         for frame in self.camera.capture_continuous(self.raw_capture, format="bgr", use_video_port=True):
             img = frame.array
             objectInfo = self.__getObjects(img)
+            
+            if len(objectInfo) > 0:
+                self.dataQueue.put(objectInfo)
 
-            if display:
+            if self.display:
                 for obj in objectInfo:
                     cv2.rectangle(img, obj[0], color=(255, 0, 0), thickness=2)
 
@@ -60,12 +66,13 @@ class ObjectDetection:
                 self.raw_capture.truncate(0)
                 if key == ord("q"):
                     break
+                
+            if not self.flag:
+                break
 
-        if display:
+        if self.display:
             cv2.destroyAllWindows()
             
 
-if __name__ == '__main__':
-    track = ObjectDetection(["cup"], 0.45)
-    track.detect_objects()
+
 

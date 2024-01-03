@@ -43,9 +43,10 @@ class Distances:
 
 
 class Autonomic:
-    def __init__(self, flag, commandQueue):
+    def __init__(self, flag, commandQueue, dataQueue):
         self.flag = flag
         self.commandQueue = commandQueue
+        self.dataQueue = dataQueue
         self.sp = SensorsPoll()
         self.mc = MotorControl()
         self.start_time = time.time()
