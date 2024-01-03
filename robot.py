@@ -22,12 +22,11 @@ class RobotControl:
 
         self.flag = Value('i', 1)
         self.autoQueue = Queue()
-        self.dataQueue = Queue()
         
-        self.objectTracker = ObjectDetection(['cup'], 0.45, self.flag, self.dataQueue)
+        self.objectTracker = ObjectDetection(['cat'], 0.35, self.flag, self.autoQueue)
         self.trackerProcess = Process(target=self.objectTracker.run)
         
-        self.autonomic = Autonomic(self.flag, self.autoQueue, self.dataQueue)
+        self.autonomic = Autonomic(self.flag, self.autoQueue)
         self.autonomicProcess = Process(target=self.autonomic.run)
         self.running = True
     

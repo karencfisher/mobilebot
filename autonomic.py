@@ -43,10 +43,9 @@ class Distances:
 
 
 class Autonomic:
-    def __init__(self, flag, commandQueue, dataQueue):
+    def __init__(self, flag, commandQueue):
         self.flag = flag
         self.commandQueue = commandQueue
-        self.dataQueue = dataQueue
         self.sp = SensorsPoll()
         self.mc = MotorControl()
         self.start_time = time.time()
@@ -65,10 +64,11 @@ class Autonomic:
                     self.halt()
                 elif command == 'resume':
                     self.running = True
-                else:
+                elif self.running:
                     self.mc.run(command=command)
                     if duration is not None:
                         time.sleep(duration)
+                
             elif self.running:
                 sensorData = self.sp.run()
                 self.distances.push([sensorData['left_rf'], 
@@ -87,7 +87,7 @@ class Autonomic:
                     sensorData['front_var'] = vars[1]
                     sensorData['right_var'] = vars[2]
 
-                print(sensorData, state)
+                # print(sensorData, state)
                 self.log.log_data(elapsed, sensorData, state)
 
                 if vars is not None and np.any(vars < 1):
